@@ -1,0 +1,13 @@
+{
+  "gamemodes": [
+    "test"
+  ],
+  "plugins": [
+    "json"
+  ],
+  "rcon_password": "password",
+  "port": 7777,
+  "hostname": "test",
+  "maxplayers": 32,
+  "mode": "server"
+}

@@ -1,0 +1,44 @@
+{
+    "user": "Southclaws",
+    "repo": "pawn-json",
+    "entry": "test.pwn",
+    "output": "test/gamemodes/test.amx",
+    "dependencies": [
+        "pawn-lang/samp-stdlib"
+    ],
+    "dev_dependencies": [
+        "pawn-lang/YSI-Includes@5.x"
+    ],
+    "build": {
+        "version": "3.10.9"
+    },
+    "runtime": {
+        "plugins": [
+            "Southclaws/pawn-json"
+        ]
+    },
+    "resources": [
+        {
+            "name": "pawn-json-linux.zip",
+            "archive": true,
+            "platform": "linux",
+            "includes": [
+                "includes"
+            ],
+            "plugins": [
+                "plugins/json.so"
+            ]
+        },
+        {
+            "name": "pawn-json-windows.zip",
+            "archive": true,
+            "platform": "windows",
+            "includes": [
+                "includes"
+            ],
+            "plugins": [
+                "plugins/json.dll"
+            ]
+        }
+    ]
+}
