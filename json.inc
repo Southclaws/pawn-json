@@ -18,104 +18,104 @@ enum JSON_NODE {
     JSON_NODE_NULL,
 }
 
-// JsonParse decodes JSON and stores the root node into `output`.
-native JsonParse(const string[], &Node:output);
+// JSON_Parse decodes JSON and stores the root node into `output`.
+native JSON_Parse(const string[], &Node:output);
 
-// JsonStringify encodes a JSON node into `buf`.
-native JsonStringify(Node:node, buf[], len = sizeof(buf));
+// JSON_Stringify encodes a JSON node into `buf`.
+native JSON_Stringify(Node:node, buf[], len = sizeof(buf));
 
-// JsonNodeType returns the type of a node from the above enumerator.
-native JSON_NODE:JsonNodeType(Node:node);
+// JSON_NodeType returns the type of a node from the above enumerator.
+native JSON_NODE:JSON_NodeType(Node:node);
 
-// JsonObject allocates a node from a set of key-value pairs where each key must
+// JSON_Object allocates a node from a set of key-value pairs where each key must
 // be a string and each value must be a `Node:` value. For example:
 //
-// JsonObject("key", JsonString("value"));
+// JSON_Object("key", JSON_String("value"));
 //
 // output: {"key": "value"}
 //
-// Returns a `Node:` ID which can be passed as an argument to another JsonObject
+// Returns a `Node:` ID which can be passed as an argument to another JSON_Object
 // function in order to build nested objects. For example:
 //
-// JsonObject("key", JsonObject("nestedKey", JsonString("value")));
+// JSON_Object("key", JSON_Object("nestedKey", JSON_String("value")));
 //
 // output: {"key": {"nestedKey": "value"}}
 //
-native Node:JsonObject({_, Node}:...);
+native Node:JSON_Object({_, Node}:...);
 
-// JsonInt, JsonBool, JsonFloat, JsonString each allocate a JSON node.
-native Node:JsonInt(value);
-native Node:JsonBool(bool:value);
-native Node:JsonFloat(Float:value);
-native Node:JsonString(const value[]);
+// JSON_Int, JSON_Bool, JSON_Float, JSON_String each allocate a JSON node.
+native Node:JSON_Int(value);
+native Node:JSON_Bool(bool:value);
+native Node:JSON_Float(Float:value);
+native Node:JSON_String(const value[]);
 
-// JsonArray simply takes an argument list of `Node:` IDs.
+// JSON_Array simply takes an argument list of `Node:` IDs.
 //
-// JsonArray(JsonString("value"), JsonInt(1), JsonObject("k", JsonString("v")))
+// JSON_Array(JSON_String("value"), JSON_Int(1), JSON_Object("k", JSON_String("v")))
 //
 // output: ["value", 1, {"k": "v"}]
 //
-native Node:JsonArray(Node:...);
+native Node:JSON_Array(Node:...);
 
-// JsonAppend returns a new `Node:` which is the result of appending b to a.
+// JSON_Append returns a new `Node:` which is the result of appending b to a.
 // This works on both objects and arrays and the two input nodes will be deleted
 // from the global node store. For example:
 //
-// new Node:a = JsonObject("key1", JsonString("value"));
-// new Node:b = JsonObject("key2", JsonString("value"));
-// new Node:c = JsonAppend(a, b);
+// new Node:a = JSON_Object("key1", JSON_String("value"));
+// new Node:b = JSON_Object("key2", JSON_String("value"));
+// new Node:c = JSON_Append(a, b);
 //
 // output: {"key1": "value", "key2": "value"}
 //
-// new Node:a = JsonArray(JsonInt(1), JsonInt(2));
-// new Node:a = JsonArray(JsonInt(3));
-// new Node:c = JsonAppend(a, b);
+// new Node:a = JSON_Array(JSON_Int(1), JSON_Int(2));
+// new Node:a = JSON_Array(JSON_Int(3));
+// new Node:c = JSON_Append(a, b);
 //
 // output: [1, 2, 3]
 //
-native Node:JsonAppend(Node:a, Node:b);
-native Node:operator+(Node:a, Node:b) = JsonAppend;
+native Node:JSON_Append(Node:a, Node:b);
+native Node:operator+(Node:a, Node:b) = JSON_Append;
 
-// JsonSet* functions directly modify nodes by inserting or modifying keys.
-native JsonSetObject(Node:node, const key[], Node:object);
-native JsonSetInt(Node:node, const key[], output);
-native JsonSetFloat(Node:node, const key[], Float:output);
-native JsonSetBool(Node:node, const key[], bool:output);
-native JsonSetString(Node:node, const key[], output[], len = sizeof(output));
+// JSON_Set* functions directly modify nodes by inserting or modifying keys.
+native JSON_SetObject(Node:node, const key[], Node:object);
+native JSON_SetInt(Node:node, const key[], output);
+native JSON_SetFloat(Node:node, const key[], Float:output);
+native JSON_SetBool(Node:node, const key[], bool:output);
+native JSON_SetString(Node:node, const key[], output[], len = sizeof(output));
 
-// JsonGetObject returns the `Node:` stored at `key` in the given `node`.
+// JSON_GetObject returns the `Node:` stored at `key` in the given `node`.
 // For example:
 //
 // input: {"key": {"inner": 1}}
 //
 // new Node:output;
-// JsonGetObject(node, "key", output);
+// JSON_GetObject(node, "key", output);
 //
 // `output` now contains a JSON object containing {"inner": 1}, this node can be
 // treated like any other node:
 //
 // new outputValue;
-// JsonGetInt(output, outputValue);
+// JSON_GetInt(output, outputValue);
 // outputValue == 1
 //
-native JsonGetObject(Node:node, const key[], &Node:output);
+native JSON_GetObject(Node:node, const key[], &Node:output);
 
-// JsonGet* functions extract a native type from an object these functions are
+// JSON_Get* functions extract a native type from an object these functions are
 // shorthand for:
 //
 // new Node:output;
-// JsonGetObject(node, "key", output);
+// JSON_GetObject(node, "key", output);
 // new string[128];
-// JsonGetNodeString(output, string);
+// JSON_GetNodeString(output, string);
 //
 // 99% of the time, you only need these functions to get values out of objects.
 //
-native JsonGetInt(Node:node, const key[], &output);
-native JsonGetFloat(Node:node, const key[], &Float:output);
-native JsonGetBool(Node:node, const key[], &bool:output);
-native JsonGetString(Node:node, const key[], output[], len = sizeof(output));
+native JSON_GetInt(Node:node, const key[], &output);
+native JSON_GetFloat(Node:node, const key[], &Float:output);
+native JSON_GetBool(Node:node, const key[], &bool:output);
+native JSON_GetString(Node:node, const key[], output[], len = sizeof(output));
 
-// JsonGetArray returns the `Node:` stored at `index` in the given `node`. The
+// JSON_GetArray returns the `Node:` stored at `index` in the given `node`. The
 // `Node:` returned could be an Object or a primitive, such as an int, float,
 // bool or string. Use functions below to convert `Node:` into a native type.
 // For example:
@@ -123,60 +123,60 @@ native JsonGetString(Node:node, const key[], output[], len = sizeof(output));
 // input: {"key": [1, 2, 3]}
 //
 // new Node:output;
-// JsonGetArray(node, key, output);
+// JSON_GetArray(node, key, output);
 //
 // `output` now contains a JSON array and can be accessed with:
 //
 // new Node:element;
-// JsonArrayObject(node, 1, element);
+// JSON_ArrayObject(node, 1, element);
 //
 // `element` now contains a JSON integer type node and can be converted to a
-// native integer type using `JsonGetNodeInt`.
+// native integer type using `JSON_GetNodeInt`.
 //
-native JsonGetArray(Node:node, const key[], &Node:output);
-native JsonArrayLength(Node:node, &length);
-native JsonArrayObject(Node:node, index, &Node:output);
+native JSON_GetArray(Node:node, const key[], &Node:output);
+native JSON_ArrayLength(Node:node, &length);
+native JSON_ArrayObject(Node:node, index, &Node:output);
 
-// JsonGetNode* functions extract a JSON object `Node:` to `output`.
+// JSON_GetNode* functions extract a JSON object `Node:` to `output`.
 // These are useful for when you get a `Node:` that represents a primitive type
-// such as from JsonGetArray.
-native JsonGetNodeInt(Node:node, &output);
-native JsonGetNodeFloat(Node:node, &Float:output);
-native JsonGetNodeBool(Node:node, &bool:output);
-native JsonGetNodeString(Node:node, output[], len = sizeof(output));
+// such as from JSON_GetArray.
+native JSON_GetNodeInt(Node:node, &output);
+native JSON_GetNodeFloat(Node:node, &Float:output);
+native JSON_GetNodeBool(Node:node, &bool:output);
+native JSON_GetNodeString(Node:node, output[], len = sizeof(output));
 
-// JsonToggleGC toggles garbage collection for a node. This prevents
-// `JsonCleanup` from deleting nodes if `auto` is true. In other words,
+// JSON_ToggleGC toggles garbage collection for a node. This prevents
+// `JSON_Cleanup` from deleting nodes if `auto` is true. In other words,
 // disabling garbage collection for a node will prevent it from being deleted
 // automatically when it leaves scope. This is useful for when you want to pass
 // a node through function calls or store it for a longer period of time.
 // Be very careful with this function as losing a node pointer will result in a
 // classic memory leak. For example:
 //
-// new Node:n = JsonObject();
-// JsonToggleGC(n, false);
-// CallLocalFunction("FillJsonObject", "d", _:n);
-// JsonToggleGC(n, true);
+// new Node:n = JSON_Object();
+// JSON_ToggleGC(n, false);
+// CallLocalFunction("FillJSON_Object", "d", _:n);
+// JSON_ToggleGC(n, true);
 //
-// This will ensure that each hook of `FillJsonObject` does not delete `n` when
+// This will ensure that each hook of `FillJSON_Object` does not delete `n` when
 // it leaves scope.
 //
-native JsonToggleGC(Node:node, bool:toggle);
+native JSON_ToggleGC(Node:node, bool:toggle);
 
 // -
 // Internal
 // -
 
-// JsonCleanup is an internal function for cleaning up `Node:` objects. This is
+// JSON_Cleanup is an internal function for cleaning up `Node:` objects. This is
 // necessary because each of the object builder functions above allocate nodes
 // in a pool to be passed between internal function calls. If called manually,
 // leave `auto` as the default value of false which will ignore a garbage
-// collection disable done with `JsonToggleGC`.
-native JsonCleanup(Node:node, auto = false);
+// collection disable done with `JSON_ToggleGC`.
+native JSON_Cleanup(Node:node, auto = false);
 
 // cleans up nodes once they go out of scope.
 stock operator~(const Node:nodes[], len) {
     for(new i; i < len; ++i) {
-        JsonCleanup(nodes[i], true);
+        JSON_Cleanup(nodes[i], true);
     }
 }
