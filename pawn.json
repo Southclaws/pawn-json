@@ -19,26 +19,14 @@
     },
     "resources": [
         {
-            "name": "pawn-json-linux.zip",
-            "archive": true,
-            "platform": "linux",
-            "includes": [
-                "includes"
-            ],
-            "plugins": [
-                "plugins/json.so"
-            ]
+            "name": "json.so",
+            "archive": false,
+            "platform": "linux"
         },
         {
-            "name": "pawn-json-windows.zip",
-            "archive": true,
-            "platform": "windows",
-            "includes": [
-                "includes"
-            ],
-            "plugins": [
-                "plugins/json.dll"
-            ]
+            "name": "json.dll",
+            "archive": false,
+            "platform": "windows"
         }
     ]
 }
