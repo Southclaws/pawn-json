@@ -5,9 +5,8 @@ mod plugin;
 mod pool;
 
 use crate::plugin::Plugin;
-use crate::pool::{GarbageCollectedPool, Pool};
+use crate::pool::GarbageCollectedPool;
 use samp::initialize_plugin;
-use std::sync::{Arc, Mutex};
 
 initialize_plugin!(
     natives: [
@@ -55,7 +54,7 @@ initialize_plugin!(
             .apply();
 
         Plugin {
-            json_nodes: Arc::new(Mutex::new(GarbageCollectedPool::default())),
+            json_nodes:GarbageCollectedPool::default(),
         }
     }
 );
