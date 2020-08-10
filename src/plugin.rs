@@ -1,21 +1,16 @@
+use crate::pool::GarbageCollectedPool;
 use log::{debug, error};
+use samp::native;
 use samp::prelude::*;
 use samp::SampPlugin;
-use samp::{native, AmxAsyncExt};
-use serde_json;
-use std::str::FromStr;
-use std::sync::{Arc, Mutex};
-use string_error::new_err;
-
-use crate::pool::{GarbageCollectedPool};
 
 pub struct Plugin {
-    pub json_nodes: Arc<Mutex<GarbageCollectedPool<serde_json::Value>>>,
+    pub json_nodes: GarbageCollectedPool<serde_json::Value>,
 }
 
 enum_from_primitive! {
 #[derive(Debug, PartialEq, Clone)]
-enum JSON_Node {
+enum JsonNode {
     Number = 0,
     Boolean,
     String,
@@ -38,8 +33,7 @@ impl Plugin {
             }
         };
 
-        let mut nodes = self.json_nodes.lock().unwrap();
-        *node = nodes.alloc(v);
+        *node = self.json_nodes.alloc(v);
 
         Ok(0)
     }
@@ -52,9 +46,7 @@ impl Plugin {
         output: UnsizedBuffer,
         length: usize,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: &serde_json::Value = match nodes.get(node) {
+        let v: &serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v,
             None => return Ok(1),
         };
@@ -75,8 +67,7 @@ impl Plugin {
 
     #[native(name = "JSON_NodeType")]
     pub fn json_node_type(&mut self, _: &Amx, node: i32) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-        let v: &serde_json::Value = match nodes.get(node) {
+        let v: &serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v,
             None => &serde_json::Value::Null,
         };
@@ -84,12 +75,12 @@ impl Plugin {
         debug!("{:?}", v);
 
         let t: i32 = match v {
-            serde_json::Value::Null => JSON_Node::Null as i32,
-            serde_json::Value::Bool(_) => JSON_Node::Boolean as i32,
-            serde_json::Value::Number(_) => JSON_Node::Number as i32,
-            serde_json::Value::String(_) => JSON_Node::String as i32,
-            serde_json::Value::Array(_) => JSON_Node::Array as i32,
-            serde_json::Value::Object(_) => JSON_Node::Object as i32,
+            serde_json::Value::Null => JsonNode::Null as i32,
+            serde_json::Value::Bool(_) => JsonNode::Boolean as i32,
+            serde_json::Value::Number(_) => JsonNode::Number as i32,
+            serde_json::Value::String(_) => JsonNode::String as i32,
+            serde_json::Value::Array(_) => JsonNode::Array as i32,
+            serde_json::Value::Object(_) => JsonNode::Object as i32,
         };
 
         Ok(t)
@@ -123,9 +114,7 @@ impl Plugin {
                 Some(parameter) => parameter,
             };
 
-            let mut nodes = self.json_nodes.lock().unwrap();
-
-            let node = match nodes.take(*node) {
+            let node = match self.json_nodes.take(*node) {
                 Some(v) => v,
                 None => {
                     error!("invalid JSON node ID passed to JSON_Object");
@@ -136,32 +125,29 @@ impl Plugin {
             v[key.to_string()] = node.clone();
         }
 
-        let mut nodes = self.json_nodes.lock().unwrap();
-        Ok(nodes.alloc(v))
+        Ok(self.json_nodes.alloc(v))
     }
 
     #[native(name = "JSON_Int")]
     pub fn json_int(&mut self, _: &Amx, value: i32) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-        Ok(nodes.alloc(serde_json::to_value(value).unwrap()))
+        Ok(self.json_nodes.alloc(serde_json::to_value(value).unwrap()))
     }
 
     #[native(name = "JSON_Bool")]
     pub fn json_bool(&mut self, _: &Amx, value: bool) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-        Ok(nodes.alloc(serde_json::to_value(value).unwrap()))
+        Ok(self.json_nodes.alloc(serde_json::to_value(value).unwrap()))
     }
 
     #[native(name = "JSON_Float")]
     pub fn json_float(&mut self, _: &Amx, value: f32) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-        Ok(nodes.alloc(serde_json::to_value(value).unwrap()))
+        Ok(self.json_nodes.alloc(serde_json::to_value(value).unwrap()))
     }
 
     #[native(name = "JSON_String")]
     pub fn json_string(&mut self, _: &Amx, value: AmxString) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-        Ok(nodes.alloc(serde_json::to_value(value.to_string()).unwrap()))
+        Ok(self
+            .json_nodes
+            .alloc(serde_json::to_value(value.to_string()).unwrap()))
     }
 
     #[native(raw, name = "JSON_Array")]
@@ -178,8 +164,7 @@ impl Plugin {
                 Some(parameter) => parameter,
             };
 
-            let mut nodes = self.json_nodes.lock().unwrap();
-            let node = match nodes.take(*node) {
+            let node = match self.json_nodes.take(*node) {
                 Some(v) => v,
                 None => {
                     error!("invalid JSON node ID passed to JSON_Array");
@@ -189,20 +174,16 @@ impl Plugin {
             arr.push(node.clone());
         }
 
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        Ok(nodes.alloc(serde_json::Value::Array(arr)))
+        Ok(self.json_nodes.alloc(serde_json::Value::Array(arr)))
     }
 
     #[native(name = "JSON_Append")]
     pub fn json_append(&mut self, _: &Amx, a: i32, b: i32) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let a: serde_json::Value = match nodes.take(a) {
+        let a: serde_json::Value = match self.json_nodes.take(a) {
             Some(v) => v,
             None => return Ok(-1),
         };
-        let b: serde_json::Value = match nodes.take(b) {
+        let b: serde_json::Value = match self.json_nodes.take(b) {
             Some(v) => v,
             None => return Ok(-1),
         };
@@ -216,7 +197,7 @@ impl Plugin {
                 for (k, v) in ob.iter() {
                     new.as_object_mut().unwrap().insert(k.clone(), v.clone());
                 }
-                return Ok(nodes.alloc(new));
+                return Ok(self.json_nodes.alloc(new));
             }
             _ => debug!("append: a and b are not both objects"),
         };
@@ -230,7 +211,7 @@ impl Plugin {
                 for v in ob.iter() {
                     new.as_array_mut().unwrap().push(v.clone());
                 }
-                return Ok(nodes.alloc(new));
+                return Ok(self.json_nodes.alloc(new));
             }
             _ => debug!("append: a and b are not both arrays"),
         };
@@ -248,13 +229,11 @@ impl Plugin {
         key: AmxString,
         value: i32,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let src: serde_json::Value = match nodes.take(value) {
-            Some(v) => v.clone(),
+        let src: serde_json::Value = match self.json_nodes.take(value) {
+            Some(v) => v,
             None => return Ok(1),
         };
-        let dst: &mut serde_json::Value = match nodes.get(node) {
+        let dst: &mut serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v,
             None => return Ok(1),
         };
@@ -274,9 +253,7 @@ impl Plugin {
         key: AmxString,
         value: i32,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: &mut serde_json::Value = match nodes.get(node) {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v,
             None => return Ok(1),
         };
@@ -296,9 +273,7 @@ impl Plugin {
         key: AmxString,
         value: f32,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: &mut serde_json::Value = match nodes.get(node) {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v,
             None => return Ok(1),
         };
@@ -318,9 +293,7 @@ impl Plugin {
         key: AmxString,
         value: bool,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: &mut serde_json::Value = match nodes.get(node) {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v,
             None => return Ok(1),
         };
@@ -340,9 +313,7 @@ impl Plugin {
         key: AmxString,
         value: AmxString,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: &mut serde_json::Value = match nodes.get(node) {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v,
             None => return Ok(1),
         };
@@ -362,9 +333,7 @@ impl Plugin {
         key: AmxString,
         mut value: Ref<i32>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.get(node) {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
@@ -376,7 +345,7 @@ impl Plugin {
             Some(v) => v.clone(),
             None => return Ok(3),
         };
-        let v = nodes.alloc(v);
+        let v = self.json_nodes.alloc(v);
         *value = v;
 
         Ok(0)
@@ -390,9 +359,7 @@ impl Plugin {
         key: AmxString,
         mut value: Ref<i32>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.get(node) {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
@@ -421,9 +388,7 @@ impl Plugin {
         key: AmxString,
         mut value: Ref<f32>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.get(node) {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
@@ -453,9 +418,7 @@ impl Plugin {
         key: AmxString,
         mut value: Ref<bool>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.get(node) {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
@@ -484,9 +447,7 @@ impl Plugin {
         value: UnsizedBuffer,
         length: usize,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.get(node) {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
@@ -517,9 +478,7 @@ impl Plugin {
         key: AmxString,
         mut value: Ref<i32>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.get(node) {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
@@ -535,7 +494,7 @@ impl Plugin {
             Some(_) => (),
             None => return Ok(3),
         };
-        let v = nodes.alloc(v);
+        let v = self.json_nodes.alloc(v);
         *value = v;
         Ok(0)
     }
@@ -547,9 +506,7 @@ impl Plugin {
         node: i32,
         mut length: Ref<i32>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.get(node) {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
@@ -569,9 +526,7 @@ impl Plugin {
         index: i32,
         mut output: Ref<i32>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.get(node) {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
@@ -583,7 +538,7 @@ impl Plugin {
             Some(v) => v.clone(),
             None => return Ok(2),
         };
-        let v = nodes.alloc(v);
+        let v = self.json_nodes.alloc(v);
         *output = v;
         Ok(0)
     }
@@ -595,10 +550,8 @@ impl Plugin {
         node: i32,
         mut output: Ref<i32>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.take(node) {
-            Some(v) => v.clone(),
+        let v: serde_json::Value = match self.json_nodes.take(node) {
+            Some(v) => v,
             None => return Ok(1),
         };
         let v = match v.as_i64() {
@@ -616,10 +569,8 @@ impl Plugin {
         node: i32,
         mut output: Ref<f32>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.take(node) {
-            Some(v) => v.clone(),
+        let v: serde_json::Value = match self.json_nodes.take(node) {
+            Some(v) => v,
             None => return Ok(1),
         };
         let v = match v.as_f64() {
@@ -637,10 +588,8 @@ impl Plugin {
         node: i32,
         mut output: Ref<bool>,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.take(node) {
-            Some(v) => v.clone(),
+        let v: serde_json::Value = match self.json_nodes.take(node) {
+            Some(v) => v,
             None => return Ok(1),
         };
         let v = match v.as_bool() {
@@ -659,10 +608,8 @@ impl Plugin {
         output: UnsizedBuffer,
         length: usize,
     ) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        let v: serde_json::Value = match nodes.take(node) {
-            Some(v) => v.clone(),
+        let v: serde_json::Value = match self.json_nodes.take(node) {
+            Some(v) => v,
             None => {
                 debug!("value under {} doesn't exist", node);
                 return Ok(1);
@@ -683,9 +630,7 @@ impl Plugin {
 
     #[native(name = "JSON_ToggleGC")]
     pub fn json_toggle_gc(&mut self, _: &Amx, node: i32, set: bool) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
-        match nodes.set_gc(node, set) {
+        match self.json_nodes.set_gc(node, set) {
             Some(_) => Ok(0),
             None => Ok(1),
         }
@@ -693,12 +638,10 @@ impl Plugin {
 
     #[native(name = "JSON_Cleanup")]
     pub fn json_cleanup(&mut self, _: &Amx, node: i32, auto: bool) -> AmxResult<i32> {
-        let mut nodes = self.json_nodes.lock().unwrap();
-
         match if auto {
-            nodes.collect(node)
+            self.json_nodes.collect(node)
         } else {
-            nodes.collect_force(node)
+            self.json_nodes.collect_force(node)
         } {
             Some(_) => Ok(0),
             None => Ok(1),
