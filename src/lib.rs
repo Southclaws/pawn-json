@@ -21,6 +21,7 @@ initialize_plugin!(
             Plugin::json_array,
             Plugin::json_append,
             Plugin::json_set_object,
+            Plugin::json_set_array,
             Plugin::json_set_int,
             Plugin::json_set_float,
             Plugin::json_set_bool,

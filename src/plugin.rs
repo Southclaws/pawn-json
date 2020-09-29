@@ -246,6 +246,30 @@ impl Plugin {
         Ok(0)
     }
 
+    #[native(name = "JSON_SetArray")]
+    pub fn json_set_array(
+        &mut self,
+        _: &Amx,
+        node: i32,
+        key: AmxString,
+        value: i32,
+    ) -> AmxResult<i32> {
+        let src: serde_json::Value = match self.json_nodes.take(value) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        let dst: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        if !src.is_array() || !dst.is_object() {
+            return Ok(1);
+        }
+
+        dst[key.to_string()] = src;
+        Ok(0)
+    }    
+
     #[native(name = "JSON_SetInt")]
     pub fn json_set_int(
         &mut self,

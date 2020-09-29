@@ -78,6 +78,7 @@ native Node:operator+(Node:a, Node:b) = JSON_Append;
 
 // JSON_Set* functions directly modify nodes by inserting or modifying keys.
 native JSON_SetObject(Node:node, const key[], Node:object);
+native JSON_SetArray(Node:node, const key[], Node:array);
 native JSON_SetInt(Node:node, const key[], output);
 native JSON_SetFloat(Node:node, const key[], Float:output);
 native JSON_SetBool(Node:node, const key[], bool:output);
