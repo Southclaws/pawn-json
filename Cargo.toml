@@ -9,7 +9,7 @@ name = "pawn_json"
 crate-type = ["dylib"]
 
 [dependencies]
-samp = {git="https://github.com/ZOTTCE/samp-rs/",branch="async-amx",features = ["async","encoding"]}
+samp = {git="https://github.com/ZOTTCE/samp-rs/",branch="potential-fix",features = ["encoding"]}
 log = "0.4.6"
 serde_json = "1.0.37"
 string-error = "0.1.0"

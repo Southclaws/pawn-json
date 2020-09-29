@@ -1,8 +1,9 @@
-use crate::pool::GarbageCollectedPool;
 use log::{debug, error};
 use samp::native;
 use samp::prelude::*;
-use samp::SampPlugin;
+use serde_json;
+
+use crate::pool::GarbageCollectedPool;
 
 pub struct Plugin {
     pub json_nodes: GarbageCollectedPool<serde_json::Value>,
