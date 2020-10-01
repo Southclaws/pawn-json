@@ -1,7 +1,6 @@
 use log::{debug, error};
 use samp::native;
 use samp::prelude::*;
-use serde_json;
 
 use crate::pool::GarbageCollectedPool;
 
