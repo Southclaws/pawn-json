@@ -1,6 +1,8 @@
 use log::{debug, error};
 use samp::native;
 use samp::prelude::*;
+use std::fs::File;
+use std::io::prelude::*;
 
 use crate::pool::GarbageCollectedPool;
 
@@ -35,6 +37,35 @@ impl Plugin {
 
         *node = self.json_nodes.alloc(v);
 
+        Ok(0)
+    }
+
+    #[native(name = "JSON_ParseFile")]
+    pub fn json_parse_file(&mut self, _: &Amx, path: AmxString, mut node: Ref<i32>) -> AmxResult<i32> {
+        let mut file = match File::open(path.to_string()) {
+            Ok(file) => file,
+            Err(e) => {
+                error!("{}", e);
+                return Ok(1);
+            }
+        };
+        let mut contents = String::new();
+        match file.read_to_string(&mut contents) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("{}", e);
+                return Ok(2);
+            }
+        };
+        let v: serde_json::Value = match serde_json::from_str(&contents) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("{}", e);
+                return Ok(3);
+            }
+        };
+
+        *node = self.json_nodes.alloc(v);
         Ok(0)
     }
 
@@ -564,6 +595,109 @@ impl Plugin {
         };
         let v = self.json_nodes.alloc(v);
         *output = v;
+        Ok(0)
+    }
+
+    #[native(name = "JSON_ArrayAppend")]
+    pub fn json_array_append(&mut self, _: &Amx, node: i32, key: AmxString, input: i32) -> AmxResult<i32> {
+        let src: serde_json::Value = match self.json_nodes.take(input) {
+            Some(src) => src.clone(),
+            None => return Ok(5),
+        };
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        if !v.is_object() {
+            return Ok(2);
+        }
+        if v.get(key.to_string()) == None {
+            return Ok(3)
+        }
+        if !v[key.to_string()].is_array() {
+            return Ok(4)
+        }
+        v[key.to_string()].as_array_mut().unwrap().push(src);
+        Ok(0)
+    }
+
+    #[native(name = "JSON_ArrayRemove")]
+    pub fn json_array_remove(&mut self, _: &Amx, node: i32, key: AmxString, input: i32) -> AmxResult<i32> {
+        let src: serde_json::Value = match self.json_nodes.get(input) {
+            Some(src) => src.clone(),
+            None => return Ok(5)
+        };
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        if !v.is_object() {
+            return Ok(2);
+        }
+        if v.get(key.to_string()) == None {
+            return Ok(3)
+        }
+        if !v[key.to_string()].is_array() {
+            return Ok(4)
+        }
+        v[key.to_string()].as_array_mut().unwrap().retain(|val| *val != src);
+        Ok(0)
+    }
+
+    #[native(name = "JSON_ArrayRemoveIndex")]
+    pub fn json_array_remove_index(&mut self, _: &Amx, node: i32, key: AmxString, index: usize) -> AmxResult<i32> {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        if !v.is_object() {
+            return Ok(2);
+        }
+        if v.get(key.to_string()) == None {
+            return Ok(3)
+        }
+        if !v[key.to_string()].is_array() {
+            return Ok(4)
+        }
+        if index >= v[key.to_string()].as_array().unwrap().len() {
+            return Ok(5)
+        }
+        v[key.to_string()].as_array_mut().unwrap().remove(index);
+        Ok(0)
+    }
+
+    #[native(name = "JSON_ArrayClear")]
+    pub fn json_array_clear(&mut self, _: &Amx, node: i32, key: AmxString) -> AmxResult<i32> {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        if !v.is_object() {
+            return Ok(2);
+        }
+        if v.get(key.to_string()) == None {
+            return Ok(3)
+        }
+        if !v[key.to_string()].is_array() {
+            return Ok(4)
+        }
+        v[key.to_string()].as_array_mut().unwrap().clear();
+        Ok(0)
+    }
+
+    #[native(name = "JSON_Remove")]
+    pub fn json_remove(&mut self, _: &Amx, node: i32, key: AmxString) -> AmxResult<i32> {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        if !v.is_object() {
+            return Ok(2);
+        }
+        if v.get(key.to_string()) == None {
+            return Ok(3)
+        }
+        v.as_object_mut().unwrap().remove(&key.to_string());
         Ok(0)
     }
 

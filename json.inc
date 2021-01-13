@@ -20,6 +20,7 @@ enum JSON_NODE {
 
 // JSON_Parse decodes JSON and stores the root node into `output`.
 native JSON_Parse(const string[], &Node:output);
+native JSON_ParseFile(const path[], &Node:output);
 
 // JSON_Stringify encodes a JSON node into `buf`.
 native JSON_Stringify(Node:node, buf[], len = sizeof(buf));
@@ -75,6 +76,9 @@ native Node:JSON_Array(Node:...);
 //
 native Node:JSON_Append(Node:a, Node:b);
 native Node:operator+(Node:a, Node:b) = JSON_Append;
+
+// JSON_Remove removes any existing key from your node.
+native JSON_Remove(Node:node, const key[]);
 
 // JSON_Set* functions directly modify nodes by inserting or modifying keys.
 native JSON_SetObject(Node:node, const key[], Node:object);
@@ -137,6 +141,22 @@ native JSON_GetString(Node:node, const key[], output[], len = sizeof(output));
 native JSON_GetArray(Node:node, const key[], &Node:output);
 native JSON_ArrayLength(Node:node, &length);
 native JSON_ArrayObject(Node:node, index, &Node:output);
+
+// JSON_ArrayAppend appends any given node to an existing JSON array.
+native JSON_ArrayAppend(Node:node, const key[], Node:input);
+
+// JSON_ArrayRemove removes any given node from a JSON array if the node's data
+// is found inside of it.
+native JSON_ArrayRemove(Node:node, const key[], Node:input);
+
+// JSON_ArrayRemoveIndex removes an item from a JSON array at the
+// specified index. Note: the indexes are not persistent, so if you
+// have a JSON array with 10 elements inside of it and remove index 3,
+// 4-9 would be shuffled down respectively.
+native JSON_ArrayRemoveIndex(Node:node, const key[], index);
+
+// JSON_ArrayClear empties out all of the items in a JSON array.
+native JSON_ArrayClear(Node:node, const key[]);
 
 // JSON_GetNode* functions extract a JSON object `Node:` to `output`.
 // These are useful for when you get a `Node:` that represents a primitive type

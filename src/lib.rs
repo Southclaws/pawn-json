@@ -11,6 +11,7 @@ use samp::initialize_plugin;
 initialize_plugin!(
     natives: [
             Plugin::json_parse,
+            Plugin::json_parse_file,
             Plugin::json_stringify,
             Plugin::json_node_type,
             Plugin::json_object,
@@ -34,6 +35,11 @@ initialize_plugin!(
             Plugin::json_get_array,
             Plugin::json_array_length,
             Plugin::json_array_object,
+            Plugin::json_array_append,
+            Plugin::json_array_remove,
+            Plugin::json_array_remove_index,
+            Plugin::json_array_clear,
+            Plugin::json_remove,
             Plugin::json_get_node_int,
             Plugin::json_get_node_float,
             Plugin::json_get_node_bool,
