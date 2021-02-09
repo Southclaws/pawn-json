@@ -69,6 +69,36 @@ impl Plugin {
         Ok(0)
     }
 
+    #[native(name = "JSON_SaveFile")]
+    pub fn json_save_file(&mut self, _: &Amx, path: AmxString, node: i32) -> AmxResult<i32> {
+        let v: &serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        let mut file = match File::create(path.to_string()) {
+            Ok(file) => file,
+            Err(e) => {
+                error!("{}", e);
+                return Ok(1);
+            }
+        };
+        let string = match serde_json::to_string(&v) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("{}", e);
+                return Ok(1);
+            }
+        };
+        match file.write_all(string.as_bytes()) {
+            Ok(file) => file,
+            Err(e) => {
+                error!("{}", e);
+                return Ok(1);
+            }
+        };
+        Ok(0)
+    }
+
     #[native(name = "JSON_Stringify")]
     pub fn json_stringify(
         &mut self,

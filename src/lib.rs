@@ -12,6 +12,7 @@ initialize_plugin!(
     natives: [
             Plugin::json_parse,
             Plugin::json_parse_file,
+            Plugin::json_save_file,
             Plugin::json_stringify,
             Plugin::json_node_type,
             Plugin::json_object,
