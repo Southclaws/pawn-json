@@ -21,7 +21,7 @@ enum JSON_NODE {
 // JSON_Parse decodes JSON and stores the root node into `output`.
 native JSON_Parse(const string[], &Node:output);
 native JSON_ParseFile(const path[], &Node:output);
-native JSON_SaveFile(const path[], Node:input);
+native JSON_SaveFile(const path[], Node:input, bool:pretty = false);
 
 // JSON_Stringify encodes a JSON node into `buf`.
 native JSON_Stringify(Node:node, buf[], len = sizeof(buf));
