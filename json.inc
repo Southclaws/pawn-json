@@ -121,6 +121,9 @@ native JSON_GetFloat(Node:node, const key[], &Float:output);
 native JSON_GetBool(Node:node, const key[], &bool:output);
 native JSON_GetString(Node:node, const key[], output[], len = sizeof(output));
 
+// JSON_GetType returns the type of a node's key
+native JSON_NODE:JSON_GetType(Node:node, const key[]);
+
 // JSON_GetArray returns the `Node:` stored at `index` in the given `node`. The
 // `Node:` returned could be an Object or a primitive, such as an int, float,
 // bool or string. Use functions below to convert `Node:` into a native type.
@@ -158,6 +161,9 @@ native JSON_ArrayRemoveIndex(Node:node, const key[], index);
 
 // JSON_ArrayClear empties out all of the items in a JSON array.
 native JSON_ArrayClear(Node:node, const key[]);
+
+// JSON_Keys can be used to iterate through the keys inside of a JSON node
+native JSON_Keys(Node:node, index, output[], len = sizeof(output));
 
 // JSON_GetNode* functions extract a JSON object `Node:` to `output`.
 // These are useful for when you get a `Node:` that represents a primitive type

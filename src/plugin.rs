@@ -341,7 +341,7 @@ impl Plugin {
 
         dst[key.to_string()] = src;
         Ok(0)
-    }    
+    }
 
     #[native(name = "JSON_SetInt")]
     pub fn json_set_int(
@@ -597,6 +597,31 @@ impl Plugin {
         Ok(0)
     }
 
+    #[native(name = "JSON_GetType")]
+    pub fn json_get_type(&mut self, _: &Amx, node: i32, key: AmxString) -> AmxResult<i32> {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(0),
+        };
+        if !v.is_object() {
+            return Ok(0);
+        }
+
+        if v.get(key.to_string()) == None {
+            return Ok(0);
+        }
+
+        let t: i32 = match v[key.to_string()] {
+            serde_json::Value::Null => JsonNode::Null as i32,
+            serde_json::Value::Bool(_) => JsonNode::Boolean as i32,
+            serde_json::Value::Number(_) => JsonNode::Number as i32,
+            serde_json::Value::String(_) => JsonNode::String as i32,
+            serde_json::Value::Array(_) => JsonNode::Array as i32,
+            serde_json::Value::Object(_) => JsonNode::Object as i32,
+        };
+        Ok(t)
+    }
+
     #[native(name = "JSON_ArrayLength")]
     pub fn json_array_length(
         &mut self,
@@ -725,6 +750,31 @@ impl Plugin {
             return Ok(4)
         }
         v[key.to_string()].as_array_mut().unwrap().clear();
+        Ok(0)
+    }
+
+    #[native(name = "JSON_Keys")]
+    pub fn json_keys(&mut self, _: &Amx, node: i32, index: i32, value: UnsizedBuffer, length: usize) -> AmxResult<i32> {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+
+        if !v.is_object() {
+            return Ok(1);
+        }
+
+        let mut vec: Vec<String> = vec![];
+        for key in v.as_object().unwrap().keys() {
+            vec.push(key.to_string());
+        }
+
+        if index as usize >= vec.len() {
+            return Ok(1)
+        }
+
+        let mut dest = value.into_sized_buffer(length);
+        let _ = samp::cell::string::put_in_buffer(&mut dest, &vec[index as usize]);
         Ok(0)
     }
 
