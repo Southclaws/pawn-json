@@ -666,6 +666,30 @@ impl Plugin {
         Ok(0)
     }
 
+    #[native(name = "JSON_ArrayIterate")]
+    pub fn json_array_iterate(&mut self,_: &Amx, node: i32, mut index: Ref<i32>, mut output: Ref<i32>) -> AmxResult<i32> {
+        let v: serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v.clone(),
+            None => return Ok(1),
+        };
+        let v = match v.as_array() {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        if self.json_nodes.has(*output) {
+            self.json_nodes.collect_force(*output);
+        }
+        let v = match v.get(*index as usize) {
+            Some(v) => v.clone(),
+            None => return Ok(2),
+        };
+
+        let v = self.json_nodes.alloc(v);
+        *output = v;
+        *index += 1;
+        Ok(0)
+    }
+
     #[native(name = "JSON_ArrayAppend")]
     pub fn json_array_append(&mut self, _: &Amx, node: i32, key: AmxString, input: i32) -> AmxResult<i32> {
         let src: serde_json::Value = match self.json_nodes.take(input) {
@@ -897,5 +921,10 @@ impl Plugin {
             Some(_) => Ok(0),
             None => Ok(1),
         }
+    }
+
+    #[native(name = "JSON_CountNodes")]
+    pub fn json_count_nodes(&mut self, _: &Amx) -> AmxResult<usize> {
+        return Ok(self.json_nodes.active.len());
     }
 }

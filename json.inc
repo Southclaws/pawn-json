@@ -145,6 +145,7 @@ native JSON_NODE:JSON_GetType(Node:node, const key[]);
 native JSON_GetArray(Node:node, const key[], &Node:output);
 native JSON_ArrayLength(Node:node, &length);
 native JSON_ArrayObject(Node:node, index, &Node:output);
+native JSON_ArrayIterate(Node:node, &index, &Node:output);
 
 // JSON_ArrayAppend appends any given node to an existing JSON array.
 native JSON_ArrayAppend(Node:node, const key[], Node:input);
@@ -201,6 +202,8 @@ native JSON_ToggleGC(Node:node, bool:toggle);
 // leave `auto` as the default value of false which will ignore a garbage
 // collection disable done with `JSON_ToggleGC`.
 native JSON_Cleanup(Node:node, auto = false);
+
+native JSON_CountNodes();
 
 // cleans up nodes once they go out of scope.
 stock operator~(const Node:nodes[], len) {

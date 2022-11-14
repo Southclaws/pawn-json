@@ -58,6 +58,10 @@ impl<T: Clone> GarbageCollectedPool<T> {
         Some(i.value)
     }
 
+    pub fn has(&mut self, id: i32) -> bool {
+        return self.active.contains_key(&id);
+    }
+
     pub fn set_gc(&mut self, id: i32, set: bool) -> Option<()> {
         self.active.get_mut(&id)?.gc = set;
         Some(())

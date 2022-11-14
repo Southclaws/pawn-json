@@ -37,6 +37,7 @@ initialize_plugin!(
             Plugin::json_get_type,
             Plugin::json_array_length,
             Plugin::json_array_object,
+            Plugin::json_array_iterate,
             Plugin::json_array_append,
             Plugin::json_array_remove,
             Plugin::json_array_remove_index,
@@ -48,7 +49,8 @@ initialize_plugin!(
             Plugin::json_get_node_bool,
             Plugin::json_get_node_string,
             Plugin::json_toggle_gc,
-            Plugin::json_cleanup
+            Plugin::json_cleanup,
+            Plugin::json_count_nodes
     ],
     {
         let samp_logger = samp::plugin::logger()
