@@ -672,6 +672,7 @@ impl Plugin {
             Some(v) => v.clone(),
             None => return Ok(1),
         };
+        *index += 1; // adding to the index here because -1 should be passed for the first iteration
         let v = match v.as_array() {
             Some(v) => v,
             None => return Ok(1),
@@ -686,7 +687,6 @@ impl Plugin {
 
         let v = self.json_nodes.alloc(v);
         *output = v;
-        *index += 1;
         Ok(0)
     }
 
