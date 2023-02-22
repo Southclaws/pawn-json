@@ -818,6 +818,39 @@ impl Plugin {
         Ok(0)
     }
 
+    #[native(name = "JSON_RemoveNode")]
+    pub fn json_remove_node(&mut self, _: &Amx, node: i32, input: i32) -> AmxResult<i32> {
+        let src: serde_json::Value = match self.json_nodes.get(input) {
+            Some(src) => src.clone(),
+            None => return Ok(1)
+        };
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(2),
+        };
+        if !v.is_array() {
+            return Ok(3);
+        }
+        v.as_array_mut().unwrap().retain(|val| *val != src);
+        Ok(0)
+    }
+
+    #[native(name = "JSON_RemoveIndex")]
+    pub fn json_remove_index(&mut self, _: &Amx, node: i32, index: usize) -> AmxResult<i32> {
+        let v: &mut serde_json::Value = match self.json_nodes.get(node) {
+            Some(v) => v,
+            None => return Ok(1),
+        };
+        if !v.is_array() {
+            return Ok(2)
+        }
+        if index >= v.as_array().unwrap().len() {
+            return Ok(3)
+        }
+        v.as_array_mut().unwrap().remove(index);
+        Ok(0)
+    }
+
     #[native(name = "JSON_GetNodeInt")]
     pub fn json_get_node_int(
         &mut self,

@@ -81,6 +81,12 @@ native Node:operator+(Node:a, Node:b) = JSON_Append;
 // JSON_Remove removes any existing key from your node.
 native JSON_Remove(Node:node, const key[]);
 
+// JSON_RemoveNode removes `input` from array `node`
+native JSON_RemoveNode(Node:node, Node:input);
+
+// JSON_RemoveIndex removes the element at `index` from array `node`
+native JSON_RemoveIndex(Node:node, index);
+
 // JSON_Set* functions directly modify nodes by inserting or modifying keys.
 native JSON_SetObject(Node:node, const key[], Node:object);
 native JSON_SetArray(Node:node, const key[], Node:array);
