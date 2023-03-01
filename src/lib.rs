@@ -44,6 +44,8 @@ initialize_plugin!(
             Plugin::json_array_clear,
             Plugin::json_keys,
             Plugin::json_remove,
+            Plugin::json_remove_node,
+            Plugin::json_remove_index,
             Plugin::json_get_node_int,
             Plugin::json_get_node_float,
             Plugin::json_get_node_bool,
