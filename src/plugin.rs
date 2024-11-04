@@ -119,19 +119,32 @@ impl Plugin {
         node: i32,
         output: UnsizedBuffer,
         length: usize,
+        pretty: bool
     ) -> AmxResult<i32> {
         let v: &serde_json::Value = match self.json_nodes.get(node) {
             Some(v) => v,
             None => return Ok(1),
         };
 
-        let s = match serde_json::to_string(&v) {
-            Ok(v) => v,
-            Err(e) => {
-                error!("{}", e);
-                return Ok(1);
+        let s: String;
+
+        if pretty {
+            s = match serde_json::to_string_pretty(&v) {
+                Ok(v) => v,
+                Err(e) => {
+                    error!("{}", e);
+                    return Ok(1);
+                }
             }
-        };
+        } else {
+            s = match serde_json::to_string(&v) {
+                Ok(v) => v,
+                Err(e) => {
+                    error!("{}", e);
+                    return Ok(1);
+                }
+            }
+        }
 
         let mut dest = output.into_sized_buffer(length);
         let _ = samp::cell::string::put_in_buffer(&mut dest, &s);
