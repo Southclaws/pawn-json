@@ -9,6 +9,8 @@
 #endif
 #define _json_included
 
+#tryinclude <PawnPlus>
+
 enum JSON_NODE {
     JSON_NODE_NUMBER,
     JSON_NODE_BOOLEAN,
@@ -24,7 +26,7 @@ native JSON_ParseFile(const path[], &Node:output);
 native JSON_SaveFile(const path[], Node:input, bool:pretty = false);
 
 // JSON_Stringify encodes a JSON node into `buf`.
-native JSON_Stringify(Node:node, buf[], len = sizeof(buf));
+native JSON_Stringify(Node:node, buf[], len = sizeof(buf), bool:pretty = false);
 
 // JSON_NodeType returns the type of a node from the above enumerator.
 native JSON_NODE:JSON_NodeType(Node:node);
@@ -217,3 +219,78 @@ stock operator~(const Node:nodes[], len) {
         JSON_Cleanup(nodes[i], true);
     }
 }
+
+// -
+// PawnPlus
+// -
+#if defined _PawnPlus_included
+    native JSON_parse(ConstAmxString:string, &Node:output) = JSON_Parse;
+    native JSON_parse_file(ConstAmxString:path, &Node:output) = JSON_ParseFile;
+    native JSON_save_file(ConstAmxString:path, Node:input, bool:pretty = false) = JSON_SaveFile;
+
+    native JSON_Stringify_Impl(Node:node, AmxString:buf, len, bool:pretty) = JSON_Stringify;
+    stock String:JSON_stringify(Node:node, bool:pretty = false)
+    {
+        new String:str = str_new_buf(8192);
+        JSON_Stringify_Impl(node, str, 8192, pretty);
+        return str;
+    }
+
+    native JSON_string(ConstAmxString:value) = JSON_String;
+
+    native JSON_set_object(Node:node, ConstAmxString:key, Node:object) = JSON_SetObject;
+    native JSON_set_array(Node:node, ConstAmxString:key, Node:array) = JSON_SetArray;
+    native JSON_set_int(Node:node, ConstAmxString:key, output) = JSON_SetInt;
+    native JSON_set_float(Node:node, ConstAmxString:key, Float:output) = JSON_SetFloat;
+    native JSON_set_bool(Node:node, ConstAmxString:key, bool:output) = JSON_SetBool;
+    native JSON_set_string_s(Node:node, ConstAmxString:key, output[], len = sizeof(output)) = JSON_SetString;
+    native JSON_set_string_str(Node:node, ConstAmxString:key, ConstAmxString:output) = JSON_SetString;
+
+    native JSON_GetInt_Impl(Node:node, ConstAmxString:key, &output) = JSON_GetInt;
+    stock JSON_get_int(Node:node, ConstAmxString:key)
+    {
+        new output;
+        JSON_GetInt_Impl(node, key, output);
+        return output;
+    }
+
+    native JSON_GetFloat_Impl(Node:node, ConstAmxString:key, &Float:output) = JSON_GetFloat;
+    stock Float:JSON_get_float(Node:node, ConstAmxString:key)
+    {
+        new Float:output;
+        JSON_GetFloat_Impl(node, key, output);
+        return output;
+    }
+
+    native JSON_GetBool_Impl(Node:node, ConstAmxString:key, &bool:output) = JSON_GetBool;
+    stock bool:JSON_get_bool(Node:node, ConstAmxString:key)
+    {
+        new bool:output;
+        JSON_GetBool_Impl(node, key, output);
+        return output;
+    }
+
+    native JSON_GetString_Impl(Node:node, ConstAmxString:key, AmxString:output, len) = JSON_GetString;
+    stock String:JSON_get_string(Node:node, ConstAmxString:key)
+    {
+        new String:str = str_new_buf(8192);
+        JSON_GetString_Impl(node, key, str, 8192);
+        return str;
+    }
+
+    native JSON_NODE:JSON_get_type(Node:node, ConstAmxString:key) = JSON_GetType;
+
+    native JSON_get_array(Node:node, ConstAmxString:key, &Node:output) = JSON_GetArray;
+    native JSON_array_append(Node:node, ConstAmxString:key, Node:input);
+    native JSON_array_remove(Node:node, ConstAmxString:key, Node:input) = JSON_ArrayRemove;
+    native JSON_array_remove_index(Node:node, ConstAmxString:key, index) = JSON_ArrayRemoveIndex;
+    native JSON_array_clear(Node:node, ConstAmxString:key) = JSON_ArrayClear;
+
+    native JSON_GetNodeString_Impl(Node:node, AmxString:output, len) = JSON_GetNodeString;
+    stock String:JSON_get_node_str(Node:node)
+    {
+        new String:str = str_new_buf(8192);
+        JSON_GetNodeString_Impl(node, str, 8192);
+        return str;
+    }
+#endif
