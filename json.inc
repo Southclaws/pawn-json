@@ -233,6 +233,7 @@ stock operator~(const Node:nodes[], len) {
     {
         new String:str = str_new_buf(8192);
         JSON_Stringify_Impl(node, str, 8192, pretty);
+        str_resize(str, str_findc(str, '\0'));
         return str;
     }
 
@@ -275,6 +276,7 @@ stock operator~(const Node:nodes[], len) {
     {
         new String:str = str_new_buf(8192);
         JSON_GetString_Impl(node, key, str, 8192);
+        str_resize(str, str_findc(str, '\0'));
         return str;
     }
 
@@ -291,6 +293,7 @@ stock operator~(const Node:nodes[], len) {
     {
         new String:str = str_new_buf(8192);
         JSON_GetNodeString_Impl(node, str, 8192);
+        str_resize(str, str_findc(str, '\0'));
         return str;
     }
 #endif
