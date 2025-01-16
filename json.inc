@@ -95,7 +95,7 @@ native JSON_SetArray(Node:node, const key[], Node:array);
 native JSON_SetInt(Node:node, const key[], output);
 native JSON_SetFloat(Node:node, const key[], Float:output);
 native JSON_SetBool(Node:node, const key[], bool:output);
-native JSON_SetString(Node:node, const key[], output[], len = sizeof(output));
+native JSON_SetString(Node:node, const key[], const output[], len = sizeof(output));
 
 // JSON_GetObject returns the `Node:` stored at `key` in the given `node`.
 // For example:
@@ -244,7 +244,7 @@ stock operator~(const Node:nodes[], len) {
     native JSON_set_int(Node:node, ConstAmxString:key, output) = JSON_SetInt;
     native JSON_set_float(Node:node, ConstAmxString:key, Float:output) = JSON_SetFloat;
     native JSON_set_bool(Node:node, ConstAmxString:key, bool:output) = JSON_SetBool;
-    native JSON_set_string_s(Node:node, ConstAmxString:key, output[], len = sizeof(output)) = JSON_SetString;
+    native JSON_set_string_s(Node:node, ConstAmxString:key, const output[], len = sizeof(output)) = JSON_SetString;
     native JSON_set_string_str(Node:node, ConstAmxString:key, ConstAmxString:output) = JSON_SetString;
 
     native JSON_GetInt_Impl(Node:node, ConstAmxString:key, &output) = JSON_GetInt;
