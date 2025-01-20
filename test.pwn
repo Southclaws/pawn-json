@@ -699,6 +699,26 @@ Test:JsonToggleGC() {
     ASSERT_EQ(JSON_Cleanup(node), 1);
 }
 
+Test:JsonArrayAppend() {
+    new Node:arr = JSON_Array(
+        JSON_Int(1),
+        JSON_Int(2)
+    );
+
+    new Node:a = JSON_Object(
+        "key1", arr
+    );
+
+    new ret = JSON_ArrayAppend(a, "key1", JSON_Int(3));
+    ASSERT_EQ(ret, 0);
+
+    new buf[128];
+    ret = JSON_Stringify(a, buf);
+    ASSERT_EQ(ret, 0);
+    ASSERT(!strcmp(buf, "{\"key1\":[1,2,3]}"));
+    print(buf);
+}
+
 scopeNodeGC(Node:node) {
     printf("scoped %d", _:node);
 }
