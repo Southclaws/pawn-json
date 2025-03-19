@@ -11,7 +11,7 @@ crate-type = ["dylib"]
 [dependencies]
 samp = {git="https://github.com/ZOTTCE/samp-rs/", features = ["encoding"]}
 log = "0.4.6"
-serde_json = "1.0.37"
+serde_json = {version = "1.0.140", features = ["preserve_order"]}
 string-error = "0.1.0"
 enum_primitive = "0.1.1"
 fern = "0.5.7"
