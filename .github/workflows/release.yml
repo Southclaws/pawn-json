@@ -6,13 +6,14 @@ on:
       - created
 
 env:
-  RELEASE_BIN: pawn_json
   RELEASE_ADDS: json.inc
-  RUST: stable-i686
 
 jobs:
   release-windows:
     runs-on: windows-2019
+    env:
+      RELEASE_BIN: pawn_json
+      RUST: stable-i686
     steps:
       - uses: actions/checkout@v4
 
@@ -22,9 +23,6 @@ jobs:
       - name: Build
         run: cargo build --release
 
-      - name: Rename binary
-        run: cp .\target\release\${{ env.RELEASE_BIN }}.dll .\target\release\json.dll
-
       - name: Create artifact directory
         run: |
           mkdir artifacts/plugins
@@ -32,7 +30,7 @@ jobs:
 
       - name: Copy files to artifacts directory
         run: |
-          cp .\target\release\json.dll .\artifacts\plugins\json.dll
+          cp .\target\release\${{ env.RELEASE_BIN }}.dll .\artifacts\plugins\json.dll
           cp .\${{ env.RELEASE_ADDS }} .\artifacts\pawno\include\${{ env.RELEASE_ADDS }}
 
       - name: Create an archive
@@ -50,39 +48,39 @@ jobs:
           asset_path: artifacts\json-windows.zip
           asset_name: json-windows.zip
           asset_content_type: application/gzip
-  
+
   release-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    env:
+      RUST: i686-unknown-linux-gnu
+      RELEASE_BIN: libpawn_json
     steps:
       - uses: actions/checkout@v4
 
       - name: Install gcc-multilib
         run: sudo apt update && sudo apt install gcc-multilib -y
-  
+
       - name: Install Rust (rustup)
-        run: rustup update ${{ env.RUST }} --no-self-update && rustup default ${{ env.RUST }}
-  
+        run: rustup target add ${{ env.RUST }}
+
       - name: Build
-        run: cargo build --release
-  
-      - name: Rename binary
-        run: cp target/release/lib${{ env.RELEASE_BIN }}.so target/release/json.so
-  
+        run: cargo build --release --target ${{ env.RUST }}
+
       - name: Create artifacts directory
         run: |
           mkdir -p artifacts/plugins
           mkdir -p artifacts/pawno/include
-  
+
       - name: Copy files to artifacts directory
         run: |
-          cp target/release/json.so artifacts/plugins/json.so
+          cp target/${{ env.RUST }}/release/${{ env.RELEASE_BIN }}.so artifacts/plugins/json.so
           cp ${{ env.RELEASE_ADDS }} artifacts/pawno/include/${{ env.RELEASE_ADDS }}
-  
+
       - name: Create an archive
         run: |
           cd artifacts
           7z a -ttar -so -an . | 7z a -si ./json-linux-x86.tar.gz
-  
+
       - name: Upload to release
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
